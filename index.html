@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#141020">
+<title>Blendin — The Imposter Game</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#141020;
+    --ink2:#1c1730;
+    --card:#211a38;
+    --card-edge:#332a52;
+    --gold:#e8b34a;
+    --gold-dim:#8a6a2c;
+    --teal:#3ee6a8;
+    --red:#ef5b6b;
+    --text:#f4efe6;
+    --text-dim:#a79fc2;
+    --seal:#ff6b57;
+    --radius:22px;
+    --safe-top: env(safe-area-inset-top);
+    --safe-bottom: env(safe-area-inset-bottom);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    font-family:'Inter',sans-serif;
+    background:
+      radial-gradient(circle at 20% 0%, #2a2148 0%, transparent 55%),
+      radial-gradient(circle at 100% 30%, #241c40 0%, transparent 50%),
+      var(--ink);
+    color:var(--text);
+    min-height:100vh;
+    overflow-x:hidden;
+    -webkit-user-select:none;
+    user-select:none;
+  }
+  #app{
+    max-width:520px;
+    margin:0 auto;
+    min-height:100vh;
+    padding: calc(var(--safe-top) + 18px) 20px calc(var(--safe-bottom) + 24px);
+    display:flex;
+    flex-direction:column;
+    position:relative;
+  }
+  h1,h2,h3{font-family:'Space Grotesk',sans-serif; margin:0;}
+  .brand{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    margin-bottom:6px;
+  }
+  .brand .dot{
+    width:10px;height:10px;border-radius:50%;
+    background:var(--seal);
+    box-shadow:0 0 14px var(--seal);
+  }
+  .brand span{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    letter-spacing:0.5px;
+    font-size:15px;
+    color:var(--text-dim);
+    text-transform:uppercase;
+  }
+  .screen{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    animation:rise .35s ease;
+  }
+  @keyframes rise{
+    from{opacity:0; transform:translateY(14px);}
+    to{opacity:1; transform:translateY(0);}
+  }
+  .title-xl{
+    font-size:38px;
+    font-weight:700;
+    line-height:1.05;
+    text-align:center;
+    margin:10px 0 6px;
+  }
+  .title-xl .accent{color:var(--gold);}
+  .subtitle{
+    text-align:center;
+    color:var(--text-dim);
+    font-size:15px;
+    margin-bottom:28px;
+    line-height:1.5;
+  }
+  .card-panel{
+    background:var(--card);
+    border:1px solid var(--card-edge);
+    border-radius:var(--radius);
+    padding:20px;
+    margin-bottom:16px;
+  }
+  label.field-label{
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:1px;
+    color:var(--text-dim);
+    font-weight:700;
+    display:block;
+    margin-bottom:10px;
+  }
+  .stepper{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    background:var(--ink2);
+    border-radius:16px;
+    padding:6px;
+  }
+  .stepper button{
+    width:46px;height:46px;
+    border-radius:12px;
+    border:none;
+    background:var(--card);
+    color:var(--text);
+    font-size:22px;
+    font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .stepper .count{
+    font-size:26px;
+    font-weight:700;
+    font-family:'Space Grotesk',sans-serif;
+  }
+  .name-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:10px;
+  }
+  .name-row .num{
+    width:26px;
+    color:var(--text-dim);
+    font-size:13px;
+    font-weight:700;
+    text-align:center;
+  }
+  .name-row input{
+    flex:1;
+    background:var(--ink2);
+    border:1px solid var(--card-edge);
+    border-radius:12px;
+    padding:12px 14px;
+    color:var(--text);
+    font-size:15px;
+    font-family:'Inter',sans-serif;
+    outline:none;
+  }
+  .name-row input:focus{border-color:var(--gold-dim);}
+  .pack-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+  }
+  .pack-chip{
+    background:var(--ink2);
+    border:1.5px solid var(--card-edge);
+    border-radius:14px;
+    padding:14px 10px;
+    text-align:center;
+    font-size:14px;
+    font-weight:600;
+    color:var(--text-dim);
+  }
+  .pack-chip.active{
+    border-color:var(--gold);
+    color:var(--gold);
+    background:rgba(232,179,74,0.08);
+  }
+  .pack-chip .emoji{font-size:22px; display:block; margin-bottom:4px;}
+  .btn{
+    display:block;
+    width:100%;
+    text-align:center;
+    padding:17px;
+    border-radius:16px;
+    border:none;
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:17px;
+    letter-spacing:0.2px;
+    cursor:pointer;
+  }
+  .btn-primary{
+    background:linear-gradient(135deg,var(--gold),#f0c674);
+    color:#241a06;
+    box-shadow:0 8px 24px rgba(232,179,74,0.25);
+  }
+  .btn-primary:active{transform:scale(0.98);}
+  .btn-ghost{
+    background:transparent;
+    color:var(--text-dim);
+    border:1.5px solid var(--card-edge);
+  }
+  .btn-danger{
+    background:transparent;
+    color:var(--red);
+    border:1.5px solid rgba(239,91,107,0.4);
+  }
+  .spacer{flex:1;}
+  .row-gap{display:flex; flex-direction:column; gap:10px;}
+
+  /* PASSING SCREEN */
+  .center-stage{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+  }
+  .eyebrow{
+    text-transform:uppercase;
+    letter-spacing:2px;
+    font-size:12px;
+    color:var(--text-dim);
+    font-weight:700;
+    margin-bottom:14px;
+  }
+  .big-name{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:44px;
+    font-weight:700;
+    color:var(--gold);
+    margin-bottom:10px;
+    word-break:break-word;
+  }
+  .hint-txt{
+    color:var(--text-dim);
+    font-size:15px;
+    max-width:320px;
+    line-height:1.5;
+  }
+
+  /* CARD FLIP */
+  .flip-wrap{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+  }
+  .scene{
+    width:100%;
+    max-width:300px;
+    aspect-ratio:3/4.3;
+    perspective:1400px;
+    margin-bottom:26px;
+  }
+  .flip-card{
+    width:100%;height:100%;
+    position:relative;
+    transform-style:preserve-3d;
+    transition:transform .6s cubic-bezier(.2,.9,.25,1);
+  }
+  .flip-card.flipped{transform:rotateY(180deg);}
+  .face{
+    position:absolute;
+    inset:0;
+    border-radius:26px;
+    backface-visibility:hidden;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    text-align:center;
+  }
+  .face-front{
+    background:
+      radial-gradient(circle at 50% 30%, #2c2350 0%, #201933 70%);
+    border:1.5px solid var(--card-edge);
+  }
+  .face-front .seal{
+    width:64px;height:64px;
+    border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #ff8b73, var(--seal));
+    display:flex;align-items:center;justify-content:center;
+    font-size:26px;
+    margin-bottom:16px;
+    box-shadow:0 0 30px rgba(255,107,87,0.35);
+  }
+  .face-front .tap-txt{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:19px;
+    color:var(--text);
+  }
+  .face-front .tap-sub{
+    color:var(--text-dim);
+    font-size:13px;
+    margin-top:6px;
+  }
+  .face-back{
+    transform:rotateY(180deg);
+    border:1.5px solid var(--gold-dim);
+  }
+  .face-back.is-word{
+    background:radial-gradient(circle at 50% 20%, #2a3f38 0%, #182620 75%);
+  }
+  .face-back.is-imposter{
+    background:radial-gradient(circle at 50% 20%, #3f2130 0%, #26161f 75%);
+  }
+  .face-back .role-tag{
+    text-transform:uppercase;
+    letter-spacing:2px;
+    font-size:11px;
+    font-weight:700;
+    margin-bottom:14px;
+  }
+  .face-back.is-word .role-tag{color:var(--teal);}
+  .face-back.is-imposter .role-tag{color:var(--red);}
+  .face-back .word-txt{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:30px;
+    font-weight:700;
+    line-height:1.2;
+  }
+  .face-back .word-sub{
+    color:var(--text-dim);
+    font-size:13px;
+    margin-top:14px;
+    line-height:1.5;
+  }
+  .progress-dots{
+    display:flex;
+    gap:7px;
+    margin-bottom:8px;
+  }
+  .progress-dots .dot{
+    width:7px;height:7px;border-radius:50%;
+    background:var(--card-edge);
+  }
+  .progress-dots .dot.done{background:var(--gold);}
+
+  /* DISCUSS SCREEN */
+  .timer-ring{
+    width:180px;height:180px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:conic-gradient(var(--gold) calc(var(--pct,100)*1%), var(--card-edge) 0);
+    margin-bottom:26px;
+    transition:background 1s linear;
+  }
+  .timer-ring .inner{
+    width:150px;height:150px;
+    border-radius:50%;
+    background:var(--ink);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'Space Grotesk',sans-serif;
+    font-size:38px;
+    font-weight:700;
+  }
+  .order-list{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    justify-content:center;
+    margin-top:18px;
+    max-width:340px;
+  }
+  .order-chip{
+    background:var(--ink2);
+    border:1px solid var(--card-edge);
+    border-radius:20px;
+    padding:7px 13px;
+    font-size:13px;
+    color:var(--text-dim);
+  }
+
+  /* RESULTS */
+  .result-card{
+    background:var(--card);
+    border:1.5px solid var(--gold-dim);
+    border-radius:var(--radius);
+    padding:26px 22px;
+    text-align:center;
+    margin-bottom:18px;
+  }
+  .result-card .r-eyebrow{
+    text-transform:uppercase;
+    letter-spacing:2px;
+    font-size:12px;
+    color:var(--text-dim);
+    font-weight:700;
+    margin-bottom:12px;
+  }
+  .result-card .r-word{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:28px;
+    font-weight:700;
+    color:var(--teal);
+    margin-bottom:16px;
+  }
+  .result-card .r-imposter{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:22px;
+    font-weight:700;
+    color:var(--red);
+  }
+  .score-strip{
+    display:flex;
+    gap:8px;
+    overflow-x:auto;
+    padding-bottom:4px;
+    margin-bottom:18px;
+  }
+  .score-pill{
+    flex:0 0 auto;
+    background:var(--ink2);
+    border:1px solid var(--card-edge);
+    border-radius:16px;
+    padding:10px 14px;
+    text-align:center;
+    min-width:70px;
+  }
+  .score-pill .nm{font-size:12px; color:var(--text-dim); margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:70px;}
+  .score-pill .sc{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:18px;}
+  .score-pill.imp{border-color:var(--red);}
+
+  .top-nav{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:6px;
+  }
+  .icon-btn{
+    background:transparent;
+    border:none;
+    color:var(--text-dim);
+    font-size:14px;
+    font-weight:600;
+    padding:8px;
+  }
+  .confetti{
+    position:fixed; inset:0; pointer-events:none; z-index:99;
+  }
+  .confetti span{
+    position:absolute;
+    top:-10px;
+    width:8px;height:14px;
+    opacity:0.9;
+    animation:fall linear forwards;
+  }
+  @keyframes fall{
+    to{ transform:translateY(110vh) rotate(540deg); opacity:0.2;}
+  }
+  .hidden{display:none !important;}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+/* ============================================================
+   WORD PACKS — edit freely to add/remove categories or words.
+   Each pack: { emoji, label, words: [...] }
+   Add a whole new pack by copying a block and giving it a new
+   key — it shows up automatically as a chip on setup.
+   ============================================================ */
+const PACKS = {
+
+  food: {
+    emoji: "🍕",
+    label: "Food",
+    words: ["Pizza","Sushi","Tacos","Pasta","Burger","Ice Cream","Pancakes","Ramen","Curry","Salad","Burrito","Waffles","Steak","Dumplings","Popcorn","Pho","Croissant","Falafel","Paella","Kimchi","Baklava","Poutine","Gyoza","Churros","Ceviche","Bibimbap","Tiramisu","Nachos","Hot Pot","Shawarma"]
+  },
+
+  movies: {
+    emoji: "🎬",
+    label: "Movies",
+    words: ["Titanic","Jaws","Inception","Frozen","Avatar","Shrek","Joker","Barbie","Grease","Up","Cars","Coco","Moana","Rocky","Alien","Jurassic Park","The Matrix","The Godfather","Star Wars","Psycho","Interstellar","Parasite","Toy Story","La La Land","Get Out","The Shining","Home Alone","Gladiator","Mean Girls","Twilight"]
+  },
+
+  places: {
+    emoji: "🌍",
+    label: "Places",
+    words: ["Paris","Beach","Airport","Hospital","School","Library","Casino","Jungle","Desert","Mountain","Stadium","Museum","Prison","Cruise Ship","Farm","Amazon Rainforest","Las Vegas","Antarctica","Times Square","Great Wall of China","Eiffel Tower","Sahara Desert","Niagara Falls","Area 51","Wall Street","Silicon Valley","Hollywood","Venice Canals","Grand Canyon","Active Volcano"]
+  },
+
+  animals: {
+    emoji: "🦁",
+    label: "Animals",
+    words: ["Lion","Penguin","Elephant","Octopus","Kangaroo","Shark","Panda","Eagle","Dolphin","Wolf","Giraffe","Tiger","Owl","Snake","Bee","Komodo Dragon","Peacock","Chameleon","Platypus","Sloth","Flamingo","Hedgehog","Raccoon","Otter","Cheetah","Koala","Jellyfish","Toucan","Scorpion","Bat"]
+  },
+
+  objects: {
+    emoji: "🎧",
+    label: "Objects",
+    words: ["Headphones","Umbrella","Backpack","Mirror","Candle","Laptop","Wallet","Guitar","Camera","Sunglasses","Watch","Skateboard","Blanket","Kettle","Bicycle","Rubik's Cube","Chandelier","Typewriter","Compass","Telescope","Trophy","Anchor","Lighter","Drone","Vinyl Record","Snow Globe","Kaleidoscope","Hourglass","Parachute","Fire Extinguisher"]
+  },
+
+  jobs: {
+    emoji: "👷",
+    label: "Jobs",
+    words: ["Doctor","Chef","Pilot","Teacher","Firefighter","Photographer","Lawyer","Barber","Farmer","Astronaut","Plumber","DJ","Nurse","Mechanic","Artist","Surgeon","Spy","Bounty Hunter","Judge","Zookeeper","Stunt Double","Tattoo Artist","Bartender","Real Estate Agent","Bodyguard","Wedding Planner","Detective","Influencer","Magician","Referee"]
+  },
+
+  /* ------------------------------------------------------
+     UNHINGED — 18+ crude / dark-humor / chaotic party pack.
+     Kept explicitly NON-sexual by design — this is a hard
+     line and won't change even if you edit the file. Still
+     plenty raunchy/edgy for a drunk friend group.
+     ------------------------------------------------------ */
+  unhinged: {
+    emoji: "🔞",
+    label: "Unhinged",
+    words: ["Hangover","Walk of Shame","Red Flag","Drunk Text","Toxic Ex","Blackout","Petty Revenge","Gaslighting","Clout Chaser","Sugar Daddy","Bar Fight","Green Flag","Situationship","Ick","Delulu","Beef","Ghosting","Main Character Energy","Chaotic Roommate","Regret","Simp","Rage Quit","Tinder Date","Karen","Trust Issues","Meltdown","Cringe","Group Chat Drama","Menace to Society","Mid-Life Crisis","Cult Leader","Pyramid Scheme","Villain Era","Home Wrecker","Unhinged Ex"]
+  },
+
+};
+
+/* ---------------- STATE ---------------- */
+let state = {
+  screen: "setup",
+  players: [],           // [{name, score, isImposter}]
+  packKey: "food",
+  currentWord: "",
+  imposterIndex: -1,
+  startIndex: 0,
+  revealOrder: [],       // indices in reveal order
+  revealPos: 0,
+  flipped: false,
+  round: 1,
+  timerSecs: 60,
+  timerLeft: 60,
+  timerHandle: null,
+};
+
+function loadPersisted(){
+  try{
+    const saved = JSON.parse(localStorage.getItem('blendin_players')||'null');
+    const savedPack = localStorage.getItem('blendin_pack');
+    if(saved && Array.isArray(saved) && saved.length){
+      state.players = saved.map(n=>({name:n, score:0, isImposter:false}));
+    } else {
+      state.players = [{name:"",score:0,isImposter:false},{name:"",score:0,isImposter:false},{name:"",score:0,isImposter:false}];
+    }
+    if(savedPack && PACKS[savedPack]) state.packKey = savedPack;
+  }catch(e){
+    state.players = [{name:"",score:0,isImposter:false},{name:"",score:0,isImposter:false},{name:"",score:0,isImposter:false}];
+  }
+}
+function persistPlayers(){
+  localStorage.setItem('blendin_players', JSON.stringify(state.players.map(p=>p.name)));
+  localStorage.setItem('blendin_pack', state.packKey);
+}
+
+/* ---------------- HELPERS ---------------- */
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+function pickWord(){
+  const pool = PACKS[state.packKey].words;
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+function vibrate(ms){ if(navigator.vibrate) navigator.vibrate(ms); }
+
+/* ---------------- RENDER ROUTER ---------------- */
+function render(){
+  const app = document.getElementById('app');
+  app.innerHTML = "";
+  const brand = document.createElement('div');
+  brand.className = 'brand';
+  brand.innerHTML = `<div class="dot"></div><span>Blendin</span>`;
+  app.appendChild(brand);
+
+  if(state.screen==='setup') renderSetup(app);
+  else if(state.screen==='passing') renderPassing(app);
+  else if(state.screen==='reveal') renderReveal(app);
+  else if(state.screen==='discuss') renderDiscuss(app);
+  else if(state.screen==='results') renderResults(app);
+}
+
+/* ---------------- SETUP ---------------- */
+function renderSetup(app){
+  const s = document.createElement('div');
+  s.className = 'screen';
+
+  const title = document.createElement('div');
+  title.innerHTML = `<div class="title-xl">Who's the <span class="accent">Imposter?</span></div>
+  <div class="subtitle">Everyone gets the same word. One player doesn't. Find them before they blend in.</div>`;
+  s.appendChild(title);
+
+  // players count + names
+  const panel = document.createElement('div');
+  panel.className = 'card-panel';
+  panel.innerHTML = `<label class="field-label">Players (${state.players.length})</label>`;
+
+  const stepper = document.createElement('div');
+  stepper.className = 'stepper';
+  stepper.innerHTML = `
+    <button id="dec">−</button>
+    <div class="count">${state.players.length}</div>
+    <button id="inc">+</button>
+  `;
+  panel.appendChild(stepper);
+  s.appendChild(panel);
+
+  const namesPanel = document.createElement('div');
+  namesPanel.className = 'card-panel';
+  namesPanel.innerHTML = `<label class="field-label">Names</label>`;
+  state.players.forEach((p,i)=>{
+    const row = document.createElement('div');
+    row.className='name-row';
+    row.innerHTML = `<div class="num">${i+1}</div><input type="text" maxlength="14" placeholder="Player ${i+1}" value="${escapeHtml(p.name)}" data-idx="${i}"/>`;
+    namesPanel.appendChild(row);
+  });
+  s.appendChild(namesPanel);
+
+  // pack picker
+  const packPanel = document.createElement('div');
+  packPanel.className = 'card-panel';
+  packPanel.innerHTML = `<label class="field-label">Word Pack</label>`;
+  const grid = document.createElement('div');
+  grid.className='pack-grid';
+  Object.entries(PACKS).forEach(([key,val])=>{
+    const chip = document.createElement('div');
+    chip.className='pack-chip'+(state.packKey===key?' active':'');
+    chip.innerHTML = `<span class="emoji">${val.emoji}</span>${val.label}`;
+    chip.onclick = ()=>{ state.packKey = key; render(); };
+    grid.appendChild(chip);
+  });
+  packPanel.appendChild(grid);
+  s.appendChild(packPanel);
+
+  s.appendChild(el('div',{class:'spacer'}));
+
+  const startBtn = document.createElement('button');
+  startBtn.className='btn btn-primary';
+  startBtn.textContent = 'Start Round';
+  startBtn.onclick = startRound;
+  s.appendChild(startBtn);
+
+  app.appendChild(s);
+
+  // wire events
+  document.getElementById('dec').onclick = ()=>{
+    if(state.players.length>3){ state.players.pop(); render(); }
+  };
+  document.getElementById('inc').onclick = ()=>{
+    if(state.players.length<12){ state.players.push({name:"",score:0,isImposter:false}); render(); }
+  };
+  namesPanel.querySelectorAll('input').forEach(inp=>{
+    inp.addEventListener('input', (e)=>{
+      const idx = +e.target.dataset.idx;
+      state.players[idx].name = e.target.value;
+    });
+  });
+}
+
+function el(tag, attrs){
+  const e = document.createElement(tag);
+  Object.entries(attrs||{}).forEach(([k,v])=> e.setAttribute(k,v));
+  return e;
+}
+function escapeHtml(str){
+  return (str||"").replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+function startRound(){
+  // fill blank names
+  state.players.forEach((p,i)=>{ if(!p.name || !p.name.trim()) p.name = `Player ${i+1}`; });
+  persistPlayers();
+
+  state.imposterIndex = Math.floor(Math.random()*state.players.length);
+  state.players.forEach((p,i)=> p.isImposter = (i===state.imposterIndex));
+  state.currentWord = pickWord();
+  state.startIndex = Math.floor(Math.random()*state.players.length);
+  state.revealOrder = shuffle(state.players.map((_,i)=>i));
+  state.revealPos = 0;
+  state.flipped = false;
+  state.screen = 'passing';
+  render();
+}
+
+/* ---------------- PASSING ---------------- */
+function renderPassing(app){
+  const s = document.createElement('div');
+  s.className='screen center-stage';
+  s.innerHTML = `
+    <div class="eyebrow">Round ${state.round} · Starting Player</div>
+    <div class="big-name">${escapeHtml(state.players[state.startIndex].name)}</div>
+    <div class="hint-txt">Hand the phone to <b>${escapeHtml(state.players[state.startIndex].name)}</b> first. Pass it around after each person taps their card. No peeking at anyone else's!</div>
+  `;
+  const btn = document.createElement('button');
+  btn.className='btn btn-primary';
+  btn.style.marginTop='30px';
+  btn.textContent = `Hand to ${state.players[state.revealOrder[0]].name}`;
+  btn.onclick = ()=>{ state.screen='reveal'; render(); };
+  s.appendChild(btn);
+  app.appendChild(s);
+}
+
+/* ---------------- REVEAL (card flip) ---------------- */
+function renderReveal(app){
+  const s = document.createElement('div');
+  s.className='screen';
+
+  const playerIdx = state.revealOrder[state.revealPos];
+  const player = state.players[playerIdx];
+
+  const top = document.createElement('div');
+  top.className='top-nav';
+  top.innerHTML = `<div></div>`;
+  s.appendChild(top);
+
+  const wrap = document.createElement('div');
+  wrap.className='flip-wrap';
+
+  const dots = document.createElement('div');
+  dots.className='progress-dots';
+  state.revealOrder.forEach((_,i)=>{
+    const d = document.createElement('div');
+    d.className='dot'+(i<state.revealPos?' done':'');
+    dots.appendChild(d);
+  });
+  wrap.appendChild(dots);
+
+  const eyebrow = document.createElement('div');
+  eyebrow.className='eyebrow';
+  eyebrow.textContent = `${escapeHtml(player.name)}'s turn`;
+  wrap.appendChild(eyebrow);
+
+  const scene = document.createElement('div');
+  scene.className='scene';
+  const flipCard = document.createElement('div');
+  flipCard.className='flip-card'+(state.flipped?' flipped':'');
+
+  const front = document.createElement('div');
+  front.className='face face-front';
+  front.innerHTML = `<div class="seal">🕵️</div><div class="tap-txt">Tap to reveal</div><div class="tap-sub">Only ${escapeHtml(player.name)} should look</div>`;
+
+  const back = document.createElement('div');
+  const isImp = player.isImposter;
+  back.className = 'face face-back '+(isImp?'is-imposter':'is-word');
+  if(isImp){
+    back.innerHTML = `<div class="role-tag">You are the</div><div class="word-txt">IMPOSTER 🎭</div><div class="word-sub">You don't know the word. Listen closely and blend in!</div>`;
+  } else {
+    back.innerHTML = `<div class="role-tag">The word is</div><div class="word-txt">${escapeHtml(state.currentWord)}</div><div class="word-sub">Say something related — but not too obvious.</div>`;
+  }
+
+  flipCard.appendChild(front);
+  flipCard.appendChild(back);
+  scene.appendChild(flipCard);
+
+  scene.onclick = ()=>{
+    if(!state.flipped){
+      state.flipped = true;
+      vibrate(15);
+      render();
+    }
+  };
+  wrap.appendChild(scene);
+
+  const hint = document.createElement('div');
+  hint.className='hint-txt';
+  hint.textContent = state.flipped ? "Memorize it, then hide the card and pass the phone." : "Tap the card to see your word.";
+  wrap.appendChild(hint);
+
+  s.appendChild(wrap);
+
+  const btn = document.createElement('button');
+  btn.className='btn btn-primary';
+  btn.style.marginTop='20px';
+  const isLast = state.revealPos === state.revealOrder.length-1;
+  btn.textContent = state.flipped ? (isLast ? "Everyone's ready →" : `Pass to ${state.players[state.revealOrder[state.revealPos+1]].name}`) : "Reveal first";
+  btn.disabled = !state.flipped;
+  btn.style.opacity = state.flipped ? 1 : 0.4;
+  btn.onclick = ()=>{
+    if(!state.flipped) return;
+    if(isLast){
+      state.timerLeft = state.timerSecs;
+      state.screen='discuss';
+    } else {
+      state.revealPos++;
+      state.flipped = false;
+    }
+    render();
+  };
+  s.appendChild(btn);
+
+  app.appendChild(s);
+}
+
+/* ---------------- DISCUSS ---------------- */
+function renderDiscuss(app){
+  const s = document.createElement('div');
+  s.className='screen center-stage';
+
+  s.innerHTML = `<div class="eyebrow">Discussion Phase</div>`;
+
+  const ring = document.createElement('div');
+  ring.className='timer-ring';
+  ring.style.setProperty('--pct', Math.round((state.timerLeft/state.timerSecs)*100));
+  ring.innerHTML = `<div class="inner">${state.timerLeft}</div>`;
+  s.appendChild(ring);
+
+  const hint = document.createElement('div');
+  hint.className='hint-txt';
+  hint.innerHTML = `Take turns describing the word with one clue each, in a circle. Then vote out who you think is the <b>imposter</b>.`;
+  s.appendChild(hint);
+
+  const orderList = document.createElement('div');
+  orderList.className='order-list';
+  state.revealOrder.forEach(i=>{
+    const chip = document.createElement('div');
+    chip.className='order-chip';
+    chip.textContent = state.players[i].name;
+    orderList.appendChild(chip);
+  });
+  s.appendChild(orderList);
+
+  const btnRow = document.createElement('div');
+  btnRow.className='row-gap';
+  btnRow.style.marginTop='28px';
+  btnRow.style.width='100%';
+
+  const revealBtn = document.createElement('button');
+  revealBtn.className='btn btn-primary';
+  revealBtn.textContent = "We're done — reveal imposter";
+  revealBtn.onclick = ()=>{ clearInterval(state.timerHandle); state.screen='results'; render(); };
+  btnRow.appendChild(revealBtn);
+
+  const skipTimer = document.createElement('button');
+  skipTimer.className='btn btn-ghost';
+  skipTimer.textContent = state.timerHandle ? "Pause timer" : "Resume timer";
+  skipTimer.onclick = ()=>{
+    if(state.timerHandle){ clearInterval(state.timerHandle); state.timerHandle=null; }
+    else { startTimer(); }
+    render();
+  };
+  btnRow.appendChild(skipTimer);
+
+  s.appendChild(btnRow);
+  app.appendChild(s);
+
+  if(!state.timerHandle && state.timerLeft>0 && !document.getElementById('__started_once')){
+    startTimer();
+  }
+}
+function startTimer(){
+  clearInterval(state.timerHandle);
+  state.timerHandle = setInterval(()=>{
+    state.timerLeft--;
+    if(state.timerLeft<=0){
+      clearInterval(state.timerHandle);
+      state.timerHandle = null;
+      state.timerLeft = 0;
+      vibrate([30,50,30]);
+    }
+    // only re-render the ring/number to avoid full-screen flicker while typing etc.
+    if(state.screen==='discuss') renderDiscussLite();
+  },1000);
+}
+function renderDiscussLite(){
+  const ring = document.querySelector('.timer-ring');
+  if(!ring) return;
+  ring.style.setProperty('--pct', Math.round((state.timerLeft/state.timerSecs)*100));
+  ring.querySelector('.inner').textContent = state.timerLeft;
+}
+
+/* ---------------- RESULTS ---------------- */
+function renderResults(app){
+  const s = document.createElement('div');
+  s.className='screen';
+
+  const card = document.createElement('div');
+  card.className='result-card';
+  card.innerHTML = `
+    <div class="r-eyebrow">The word was</div>
+    <div class="r-word">${escapeHtml(state.currentWord)}</div>
+    <div class="r-eyebrow">The imposter was</div>
+    <div class="r-imposter">🎭 ${escapeHtml(state.players[state.imposterIndex].name)}</div>
+  `;
+  s.appendChild(card);
+
+  const voteHint = document.createElement('div');
+  voteHint.className='hint-txt';
+  voteHint.style.textAlign='center';
+  voteHint.style.marginBottom='18px';
+  voteHint.innerHTML = `Did the group catch them? Tap below to score the round.`;
+  s.appendChild(voteHint);
+
+  const scoreRow = document.createElement('div');
+  scoreRow.className='row-gap';
+
+  const caughtBtn = document.createElement('button');
+  caughtBtn.className='btn btn-primary';
+  caughtBtn.textContent = '✅ Imposter was caught (+1 everyone else)';
+  caughtBtn.onclick = ()=>{
+    state.players.forEach((p,i)=>{ if(i!==state.imposterIndex) p.score++; });
+    finishScoring();
+  };
+  scoreRow.appendChild(caughtBtn);
+
+  const escapedBtn = document.createElement('button');
+  escapedBtn.className='btn btn-danger';
+  escapedBtn.textContent = "🎭 Imposter escaped (+2 imposter)";
+  escapedBtn.onclick = ()=>{
+    state.players[state.imposterIndex].score += 2;
+    finishScoring();
+  };
+  scoreRow.appendChild(escapedBtn);
+
+  s.appendChild(scoreRow);
+
+  const scoreLabel = document.createElement('label');
+  scoreLabel.className='field-label';
+  scoreLabel.style.marginTop='24px';
+  scoreLabel.textContent = 'Scoreboard';
+  s.appendChild(scoreLabel);
+
+  const strip = document.createElement('div');
+  strip.className='score-strip';
+  state.players.slice().sort((a,b)=>b.score-a.score).forEach(p=>{
+    const pill = document.createElement('div');
+    pill.className='score-pill';
+    pill.innerHTML = `<div class="nm">${escapeHtml(p.name)}</div><div class="sc">${p.score}</div>`;
+    strip.appendChild(pill);
+  });
+  s.appendChild(strip);
+
+  s.appendChild(el('div',{class:'spacer'}));
+
+  const nextBtn = document.createElement('button');
+  nextBtn.className='btn btn-primary';
+  nextBtn.textContent = 'Next Round →';
+  nextBtn.onclick = ()=>{
+    state.round++;
+    startRound();
+  };
+  s.appendChild(nextBtn);
+
+  const editBtn = document.createElement('button');
+  editBtn.className='btn btn-ghost';
+  editBtn.style.marginTop='10px';
+  editBtn.textContent = 'Edit players / new game';
+  editBtn.onclick = ()=>{
+    state.round = 1;
+    state.players.forEach(p=>p.score=0);
+    state.screen='setup';
+    render();
+  };
+  s.appendChild(editBtn);
+
+  app.appendChild(s);
+}
+function finishScoring(){
+  launchConfetti();
+  render();
+}
+
+/* ---------------- CONFETTI ---------------- */
+function launchConfetti(){
+  const colors = ['#e8b34a','#3ee6a8','#ef5b6b','#f4efe6'];
+  const c = document.createElement('div');
+  c.className='confetti';
+  for(let i=0;i<26;i++){
+    const s = document.createElement('span');
+    s.style.left = Math.random()*100+'vw';
+    s.style.background = colors[Math.floor(Math.random()*colors.length)];
+    s.style.animationDuration = (1.6+Math.random()*1.2)+'s';
+    s.style.animationDelay = (Math.random()*0.4)+'s';
+    c.appendChild(s);
+  }
+  document.body.appendChild(c);
+  setTimeout(()=> c.remove(), 3200);
+}
+
+/* ---------------- INIT ---------------- */
+loadPersisted();
+render();
+</script>
+</body>
+</html>
